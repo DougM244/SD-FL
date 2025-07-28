@@ -1,0 +1,29 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # Serviço do Orquestrador
+  orchestrator:
+    image: seu-usuario/fl-orchestrator:v1
+    command: python -u orchestrator/orchestrator.py
+    # O 'depends_on' garante que os clientes iniciem primeiro
+    depends_on:
+      - client-1
+      - client-2
+      - client-3
+
+  # Nossos três clientes de FL
+  client-1:
+    image: seu-usuario/fl-client:v1
+    environment:
+      - CLIENT_ID=0 # Usado pelo client_app.py para carregar dados diferentes
+
+  client-2:
+    image: seu-usuario/fl-client:v1
+    environment:
+      - CLIENT_ID=1
+
+  client-3:
+    image: seu-usuario/fl-client:v1
+    environment:
+      - CLIENT_ID=2

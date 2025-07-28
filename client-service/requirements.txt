@@ -1,0 +1,5 @@
+# client-service/requirements.txt
+flask
+requests
+numpy
+tensorflow
