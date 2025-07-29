@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-1
+  labels: { app: client-1 }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: client-1 }
+  template:
+    metadata:
+      labels: { app: client-1 }
+    spec:
+      containers:
+      - name: client
+        image: rai/fl-client:v1
+        env:
+        - name: CLIENT_ID
+          value: "0"
+        ports:
+        - containerPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-2
+  labels: { app: client-2 }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: client-2 }
+  template:
+    metadata:
+      labels: { app: client-2 }
+    spec:
+      containers:
+      - name: client
+        image: rai/fl-client:v1
+        env:
+        - name: CLIENT_ID
+          value: "1"
+        ports:
+        - containerPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-3
+  labels: { app: client-3 }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: client-3 }
+  template:
+    metadata:
+      labels: { app: client-3 }
+    spec:
+      containers:
+      - name: client
+        image: rai/fl-client:v1
+        env:
+        - name: CLIENT_ID
+          value: "2"
+        ports:
+        - containerPort: 5000

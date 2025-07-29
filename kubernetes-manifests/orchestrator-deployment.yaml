@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  labels:
+    app: orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      containers:
+      - name: orchestrator
+        image: rai/fl-orchestrator:v1
+        command: ["python","-u","orchestrator/orchestrator.py"]
+        ports:
+        - containerPort: 5000
+        # resources: heterogeneidade aqui dps
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator
+spec:
+  selector:
+    app: orchestrator
+  ports:
+  - port: 80
+    targetPort: 5000
