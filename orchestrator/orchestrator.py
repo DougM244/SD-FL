@@ -35,6 +35,13 @@ def run_federated_training():
     # O modelo precisa ser compilado uma vez para poder ser usado na avaliação
     global_model.compile(loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
+    # Inicializar os parâmetros do timeout adaptativo para cada cliente
+    client_timing_stats = {endpoint: {"avg_rtt": 30.0, "dev_rtt": 5.0} for endpoint in CLIENT_ENDPOINTS}
+    MIN_TIMEOUT = 10
+    MAX_TIMEOUT = 180
+    ALPHA = 0.125 # Fator de ponderação para a média
+    BETA = 0.25 # Fator de ponderação para o desvio padrão
+
     # Loop principal de treinamento
     for round_num in range(NUM_ROUNDS):
         print(f"\n--- RODADA {round_num + 1}/{NUM_ROUNDS} ---")
@@ -51,14 +58,34 @@ def run_federated_training():
         # Envia o modelo para cada cliente e coleta as atualizações
         for i, endpoint in enumerate(CLIENT_ENDPOINTS):
             try:
+                # Calcular o timeout para esta chamada específica
+                stats = client_timing_stats[endpoint]
+                current_timeout = stats["avg_rtt"] + 4 * stats["dev_rtt"]
+                # Garantir que o timeout está dentro de limites razoáveis
+                current_timeout = max(MIN_TIMEOUT, min(current_timeout, MAX_TIMEOUT))
+
                 print(f"Enviando modelo para o cliente {i+1} ({endpoint})...")
+
+                start_time = time.time()
                 response = requests.post(
                     endpoint, 
                     json={'weights': global_weights_serializable}, 
-                    timeout=120 # Timeout maior para dar tempo de treinar
+                    timeout= current_timeout  # Usando o timeout adaptativo
                 )
+                end_time = time.time()
+
                 # Lança um erro se a resposta for 4xx ou 5xx
                 response.raise_for_status() 
+
+                # Medir o tempo e atualizar as estatísticas se for bem-sucedido
+                sample_rtt = end_time - start_time
+
+                # Atualiza o desvio padrão (referente ao time)
+                delta = abs(sample_rtt - stats["avg_rtt"])
+                stats["dev_rtt"] = (1 - BETA) * stats["dev_rtt"] + BETA * delta
+
+                # Atualiza a média (referente ao time)
+                stats["avg_rtt"] = (1 - ALPHA) * stats["avg_rtt"] + ALPHA * sample_rtt
                 
                 result = response.json()
                 client_weights = [np.array(w, dtype=np.float32) for w in result['weights']]
