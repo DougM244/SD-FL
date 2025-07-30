@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Serviço de orquestração dos testes
+  test-orchestrator:
+    build:
+      context: .
+      dockerfile: orchestrator/Dockerfile
+    container_name: test-orchestrator
+    volumes:
+      - ./node_failure_tests:/app/node_failure_tests
+      - ./common:/app/common
+    networks:
+      - fl-network
+    depends_on:
+      - client-1
+      - client-2
+      - client-3
+    environment:
+      - PYTHONPATH=/app
+    command: python node_failure_tests/run_all_scenarios.py
+
+  # Cliente 1
+  client-1:
+    build:
+      context: .
+      dockerfile: client-service/Dockerfile
+    container_name: client-1
+    ports:
+      - "5001:5000"
+    networks:
+      - fl-network
+    volumes:
+      - ./common:/app/common
+    environment:
+      - CLIENT_ID=1
+      - PYTHONPATH=/app
+
+  # Cliente 2
+  client-2:
+    build:
+      context: .
+      dockerfile: client-service/Dockerfile
+    container_name: client-2
+    ports:
+      - "5002:5000"
+    networks:
+      - fl-network
+    volumes:
+      - ./common:/app/common
+    environment:
+      - CLIENT_ID=2
+      - PYTHONPATH=/app
+
+  # Cliente 3
+  client-3:
+    build:
+      context: .
+      dockerfile: client-service/Dockerfile
+    container_name: client-3
+    ports:
+      - "5003:5000"
+    networks:
+      - fl-network
+    volumes:
+      - ./common:/app/common
+    environment:
+      - CLIENT_ID=3
+      - PYTHONPATH=/app
+
+networks:
+  fl-network:
+    driver: bridge

@@ -1,0 +1,18 @@
+# Dockerfile para o orquestrador de testes
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copia todos os arquivos necessários
+COPY common/ ./common/
+COPY node_failure_tests/ ./node_failure_tests/
+
+# Instala as dependências
+COPY node_failure_tests/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Cria diretório para resultados
+RUN mkdir -p /app/node_failure_tests/results
+
+# Define o comando padrão
+CMD ["python", "node_failure_tests/test_orchestrator.py"]

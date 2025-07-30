@@ -1,0 +1,67 @@
+# node_failure_tests/docker-compose-test.yml
+
+version: '3.8'
+
+services:
+  # Orquestrador de testes (substitui o orquestrador original)
+  test-orchestrator:
+    build:
+      context: ..
+      dockerfile: node_failure_tests/Dockerfile.test-orchestrator
+    container_name: test-orchestrator
+    volumes:
+      - ./results:/app/node_failure_tests/results
+    depends_on:
+      - client-1
+      - client-2
+      - client-3
+    networks:
+      - fl-network
+    environment:
+      - PYTHONPATH=/app
+
+  # Cliente 1
+  client-1:
+    build:
+      context: ..
+      dockerfile: client-service/Dockerfile
+    container_name: client-1
+    environment:
+      - CLIENT_ID=0
+    networks:
+      - fl-network
+    ports:
+      - "5001:5000"
+
+  # Cliente 2
+  client-2:
+    build:
+      context: ..
+      dockerfile: client-service/Dockerfile
+    container_name: client-2
+    environment:
+      - CLIENT_ID=1
+    networks:
+      - fl-network
+    ports:
+      - "5002:5000"
+
+  # Cliente 3
+  client-3:
+    build:
+      context: ..
+      dockerfile: client-service/Dockerfile
+    container_name: client-3
+    environment:
+      - CLIENT_ID=2
+    networks:
+      - fl-network
+    ports:
+      - "5003:5000"
+
+networks:
+  fl-network:
+    driver: bridge
+
+volumes:
+  test-results:

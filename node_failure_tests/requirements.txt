@@ -1,0 +1,10 @@
+# node_failure_tests/requirements.txt
+
+# Dependências para testes de falha de nós
+requests
+numpy
+tensorflow
+pandas
+openpyxl  # Para exportar Excel
+matplotlib  # Para gráficos (opcional)
+seaborn  # Para visualizações (opcional)
